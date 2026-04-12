@@ -1,0 +1,24 @@
+# Build files
+/build/
+/bin/
+/out/
+
+# Visual Studio / VSCode
+.vs/
+*.vcxproj*
+*.sln
+.vscode/
+
+# Compiled files
+*.exe
+*.obj
+*.o
+*.dll
+
+# CMake
+CMakeFiles/
+CMakeCache.txt
+
+# OS junk
+.DS_Store
+Thumbs.db
