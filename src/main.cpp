@@ -35,7 +35,7 @@ int main() {
 	}
 
 	// build and compile the shader program
-	Shader ourShader("shaders/shader.vs", "shaders/shader.fs");
+	Shader ourShader("shaders/shader.vert", "shaders/shader.frag");
 
 	float vertices[] = {
 		// positions          // colors           // texture coords
@@ -81,9 +81,12 @@ int main() {
 	glBindVertexArray(0);
 
 	// load and create texture
-	unsigned int texture;
-	glGenTextures(1, &texture);
-	glBindTexture(GL_TEXTURE_2D, texture);
+
+	stbi_set_flip_vertically_on_load(true);
+
+	unsigned int texture1, texture2;
+	glGenTextures(1, &texture1);
+	glBindTexture(GL_TEXTURE_2D, texture1);
 	// set the texture wrapping/filtering options
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
@@ -91,11 +94,8 @@ int main() {
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 	// load and generate the texture
 	int width, height, nrChannels;
-	unsigned char* data = stbi_load("textures/container.jpg", &width, &height, &nrChannels, 0);
+	unsigned char* data = stbi_load("resources/textures/container.jpg", &width, &height, &nrChannels, 0);
 	if (data) {
-		std::cout << "Texture loaded successfully" << std::endl;
-		std::cout << "Size: " << width << "x" << height << std::endl;
-		std::cout << "Channels: " << nrChannels << std::endl;
 		glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, width, height, 0, GL_RGB, GL_UNSIGNED_BYTE, data);
 		glGenerateMipmap(GL_TEXTURE_2D);
 	}
@@ -103,10 +103,32 @@ int main() {
 		std::cout << "Failed to load texture" << std::endl;
 	}
 
-	ourShader.use();
-	glUniform1i(glGetUniformLocation(ourShader.ID, "texture1"), 0);
+	stbi_image_free(data);
+
+	// texture 2
+	glGenTextures(1, &texture2);
+	glBindTexture(GL_TEXTURE_2D, texture2);
+
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+
+	data = stbi_load("resources/textures/Awesome_Face.svg.png", &width, &height, &nrChannels, 0);
+	if (data) {
+		glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, width, height, 0, GL_RGBA, GL_UNSIGNED_BYTE, data);
+		glGenerateMipmap(GL_TEXTURE_2D);
+	}
+	else {
+		std::cout << "Failed to load texture" << std::endl;
+	}
 
 	stbi_image_free(data);
+
+	ourShader.use();
+	ourShader.setInt("texture1", 0);
+	ourShader.setInt("texture2", 1);
+
 
 	// render loop
 	while (!glfwWindowShouldClose(window)) {
@@ -119,7 +141,9 @@ int main() {
 		
 		// bind texture
 		glActiveTexture(GL_TEXTURE0);
-		glBindTexture(GL_TEXTURE_2D, texture);
+		glBindTexture(GL_TEXTURE_2D, texture1);
+		glActiveTexture(GL_TEXTURE1);
+		glBindTexture(GL_TEXTURE_2D, texture2);
 
 		// render the container
 		ourShader.use();
